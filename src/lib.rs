@@ -79,11 +79,84 @@ pub trait Guesser {
 mod tests {
     mod compute {
         use crate::Correctness;
+
+        macro_rules! mask {
+            (C) => {Correctness::Correct};
+            (M) => {Correctness::Misplaced};
+            (W) => {Correctness::Wrong};
+            ($($c:tt)+) => {[
+                $(mask!($c)),+
+            ]}
+        }
         #[test]
         fn all_green() {
             assert_eq!(
                 Correctness::compute("abcde", "abcde"),
-                [Correctness::Correct; 5]
+                mask![C C C C C]
+            );
+        }
+
+        #[test]
+        fn all_grey(){
+            assert_eq!(
+                Correctness::compute("abcde", "fghij"),
+                mask![W W W W W]
+            );
+        }
+
+        #[test]
+        fn all_yellow(){
+            assert_eq!(
+                Correctness::compute("abcde", "eabcd"),
+                mask![M M M M M]
+            );
+        }
+
+        #[test]
+        fn repeat_green(){
+            assert_eq!(
+                Correctness::compute("aabbb", "aaccc"),
+                mask![C C W W W]
+            );
+        }
+
+        #[test]
+        fn repeat_tellow(){
+            assert_eq!(
+                Correctness::compute("aabbb", "ccaac"),
+                mask![W W M M W]
+            );
+        }
+
+        #[test]
+        fn repeat_some_green(){
+            assert_eq!(
+                Correctness::compute("aabbb", "caacc"),
+                mask![W C M W W]
+            );
+        }
+
+        #[test]
+        fn edge_1(){
+            assert_eq!(
+                Correctness::compute("azzaz", "aaabb"),
+                mask![C M W W W]
+            );
+        }
+
+        #[test]
+        fn edge_2(){
+            assert_eq!(
+                Correctness::compute("baccc", "aaddd"),
+                mask![W C W W W]
+            );
+        }
+
+        #[test]
+        fn edge_3(){
+            assert_eq!(
+                Correctness::compute("abcde", "aacde"),
+                mask![C W C C C]
             );
         }
     }
