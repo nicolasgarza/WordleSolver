@@ -93,6 +93,17 @@ pub struct Guess {
     pub mask: [Correctness; 5],
 }
 
+impl Guess {
+    pub fn matches(&self, word: &str) -> bool {
+        // First, check greens
+        assert_eq!(self.word.len(), 5);
+        assert_eq!(word.len(), 5);
+        for _ in self.words.chars().zip()
+
+        todo!()
+    }
+}
+
 pub trait Guesser {
     fn guess(&mut self, history: &[Guess]) -> String;
 }
