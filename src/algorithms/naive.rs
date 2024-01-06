@@ -28,7 +28,7 @@ struct Candidate {
 impl Guesser for Naive {
     fn guess(&mut self, history: &[Guess]) -> String {
         if let Some(last) = history.last() {
-            self.remaining.retain(|(word, _)| last.matches(word));
+            self.remaining.retain(|word, _| last.matches(word));
         }
         let mut best: Option<Candidate> = None;
         for (&word, &count) in &self.remaining {
