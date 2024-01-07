@@ -35,7 +35,15 @@ impl Guesser for Naive {
 
         let mut best: Option<Candidate> = None;
         for (&word, &count) in &self.remaining {
+            // [word1, word2, ..., wordn]
+            // 
+            // for word_i, the goodness is the sum of the goodness of each possible pattern we
+            // _might_ see as a result of guessing it, multiplied by the likelihood of that pattern
+            // occuring.
+            //
+            //
             // TODO: how do we compute this?
+            // - SUM_i pi_i * log_2(pi_i)
             let p_word = count as f64 / total_count as f64;
             let goodness = 0.0 - (p_word * p_word.log2());
             if let Some(c) = best {

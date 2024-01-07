@@ -86,6 +86,10 @@ impl Correctness {
         }
         c
     }
+
+    pub fn permutations() -> impl Iterator<Item = [Self; 5]> {
+        
+    }
 }
 
 pub struct Guess {
