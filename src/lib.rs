@@ -110,7 +110,11 @@ impl Guess {
             } 
         }
 
-        for (i,((g, &m), w)) in self.word.chars().zip(&self.mask).zip(word.chars()).enumerate() {
+        for (i, (w, &m)) in word.chars().zip(&self.mask).enumerate() {
+            if m == Correctness::Correct {
+                // must be correct, or we'd have returned in the earlier loop.
+                continue;
+            }
 
             let mut plausible = true;
             if self.word.chars().zip(&self.mask).enumerate().any(|(j, (g, m))| {
@@ -194,13 +198,42 @@ mod tests {
     mod guess_matcher {
         use crate::Guess;
 
+        macro_rules! check {
+            ($prev:literal + [$($mask:tt)+] allows $next:literal) => {
+                assert!(Guess {
+                    word: $prev.to_string(),
+                    mask: mask![$($mask )+]
+                }
+                .matches($next));
+            };
+            ($prev:literal + [$($mask:tt)+] disallows $next:literal) => {
+                assert!(!Guess {
+                    word: $prev.to_string(),
+                    mask: mask![$($mask )+]
+                }
+                .matches($next));
+            }
+        }
         #[test]
         fn matches() {
-            assert!( Guess {
-                word:"abcde".to_string(),
-                mask: mask![C C C C C]
-            }
-            .matches("abcde"));
+            check!("abcde" + [C C C C C] allows "abcde");
+            check!("abcdf" + [C C C C C] disallows "abcde");
+            check!("abcde" + [W W W W W] allows "fghij");
+            check!("abcde" + [M M M M M] allows "eabcd");
+            check!("abcde" + [M M M M M] allows "eabcd");
+            check!("baaaa" + [W C M W W] allows "aaccc");
+            check!("baaaa" + [W C M W W] disallows "caacc");
+        }
+
+        #[test]
+        fn debug() {
+            check!("baaaa" + [W C M W W] allows "aaccc");       
+        }
+
+        #[test]
+        fn more_edge_cases() {
+            check!("aaabb" + [C M W W W] disallows "accaa");
+            check!("abcde" + [W W W W W] disallows "bcdea");
         }
     }
     mod game {
