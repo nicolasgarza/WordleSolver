@@ -87,8 +87,15 @@ impl Correctness {
         c
     }
 
-    pub fn permutations() -> impl Iterator<Item = [Self; 5]> {
-        
+    pub fn patterns() -> impl Iterator<Item = [Self; 5]> {
+        itertools::iproduct!(
+            [Self::Correct, Self::Misplaced, Self::Wrong],
+            [Self::Correct, Self::Misplaced, Self::Wrong],
+            [Self::Correct, Self::Misplaced, Self::Wrong],
+            [Self::Correct, Self::Misplaced, Self::Wrong],
+            [Self::Correct, Self::Misplaced, Self::Wrong]
+            )
+            .map(|(a,b,c,d,e)| [a,b,c,d,e])
     }
 }
 
