@@ -30,10 +30,14 @@ impl Guesser for Naive {
         if let Some(last) = history.last() {
             self.remaining.retain(|word, _| last.matches(word));
         }
+
+        let total_count: usize = self.remaining.iter().map(|(_, &c)| c).sum();
+
         let mut best: Option<Candidate> = None;
         for (&word, &count) in &self.remaining {
             // TODO: how do we compute this?
-            let goodness = 0.0;
+            let p_word = count as f64 / total_count as f64;
+            let goodness = 0.0 - (p_word * p_word.log2());
             if let Some(c) = best {
                 // is this one better?
                 if goodness > c.goodness {

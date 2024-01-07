@@ -205,6 +205,7 @@ mod tests {
                     mask: mask![$($mask )+]
                 }
                 .matches($next));
+                assert_eq!($crate::Correctness::compute($next, $prev), mask![$($mask )+]);
             };
             ($prev:literal + [$($mask:tt)+] disallows $next:literal) => {
                 assert!(!Guess {
@@ -212,6 +213,7 @@ mod tests {
                     mask: mask![$($mask )+]
                 }
                 .matches($next));
+                assert_ne!($crate::Correctness::compute($next, $prev), mask![$($mask )+]);
             }
         }
         #[test]
@@ -223,11 +225,6 @@ mod tests {
             check!("abcde" + [M M M M M] allows "eabcd");
             check!("baaaa" + [W C M W W] allows "aaccc");
             check!("baaaa" + [W C M W W] disallows "caacc");
-        }
-
-        #[test]
-        fn debug() {
-            check!("baaaa" + [W C M W W] allows "aaccc");       
         }
 
         #[test]
