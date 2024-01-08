@@ -17,6 +17,7 @@ struct Args {
 enum Implementation {
     Naive,
     Allocs,
+    Vecrem,
 }
 
 impl std::str::FromStr for Implementation {
@@ -38,6 +39,9 @@ fn main() {
         }
         Implementation::Allocs => {
             play(roget::algorithms::Allocs::new, args.max)
+        }
+        Implementation::Vecrem => {
+            play(roget::algorithms::Vecrem::new, args.max)
         }
     }
 
