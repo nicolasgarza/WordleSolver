@@ -3,8 +3,9 @@ use roget::Guesser;
 
 const GAMES: &str = include_str!("../answers.txt");
 
+/// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about=None)]
+#[clap(author, version, about, long_about = None)]
 struct Args {
     #[clap(short, long, arg_enum)]
     implementation: Implementation,
@@ -15,40 +16,29 @@ struct Args {
 
 #[derive(ArgEnum, Debug, Clone, Copy)]
 enum Implementation {
-    Naive,
     Allocs,
     Vecrem,
-}
-
-impl std::str::FromStr for Implementation {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "naive" => Ok(Self::Naive),
-            _ => Err(format!("unknown implementation '{}'", s)),
-        }
-    }
+    Once,
 }
 
 fn main() {
     let args = Args::parse();
 
     match args.implementation {
-        Implementation::Naive => {
-            play(roget::algorithms::Naive::new, args.max)
-        }
         Implementation::Allocs => {
-            play(roget::algorithms::Allocs::new, args.max)
+            play(roget::algorithms::Allocs::new, args.max);
         }
         Implementation::Vecrem => {
-            play(roget::algorithms::Vecrem::new, args.max)
+            play(roget::algorithms::Vecrem::new, args.max);
+        }
+        Implementation::Once => {
+            play(roget::algorithms::OnceInit::new, args.max);
         }
     }
-
 }
 
-fn play<G>(mut mk: impl FnMut() -> G, max: Option<usize>) 
-where 
+fn play<G>(mut mk: impl FnMut() -> G, max: Option<usize>)
+where
     G: Guesser,
 {
     let w = roget::Wordle::new();

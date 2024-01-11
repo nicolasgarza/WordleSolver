@@ -19,8 +19,7 @@ impl Wordle {
         }
     }
 
-    pub fn play<G: Guesser>(&self, answer: &str, mut guesser: G) -> Option<usize> {
-        // play six rounds where it invokes guesser each round
+    pub fn play<G: Guesser>(&self, answer: &'static str, mut guesser: G) -> Option<usize> {
         let mut history = Vec::new();
         // Wordle only allows six guesses.
         // We allow more to avoid chopping off the score distribution for stats purposes.
@@ -29,7 +28,11 @@ impl Wordle {
             if guess == answer {
                 return Some(i);
             }
-            assert!(self.dictionary.contains(&*guess));
+            assert!(
+                self.dictionary.contains(&*guess),
+                "guess '{}' is not in the dictionary",
+                guess
+            );
             let correctness = Correctness::compute(answer, &guess);
             history.push(Guess {
                 word: Cow::Owned(guess),
@@ -46,7 +49,7 @@ pub enum Correctness {
     Correct,
     /// Yellow
     Misplaced,
-    /// Grey
+    /// Gray
     Wrong,
 }
 
@@ -61,7 +64,6 @@ impl Correctness {
                 c[i] = Correctness::Correct;
             }
         }
-
         // Mark things yellow
         let mut used = [false; 5];
         for (i, &c) in c.iter().enumerate() {
@@ -94,8 +96,8 @@ impl Correctness {
             [Self::Correct, Self::Misplaced, Self::Wrong],
             [Self::Correct, Self::Misplaced, Self::Wrong],
             [Self::Correct, Self::Misplaced, Self::Wrong]
-            )
-            .map(|(a,b,c,d,e)| [a,b,c,d,e])
+        )
+        .map(|(a, b, c, d, e)| [a, b, c, d, e])
     }
 }
 
@@ -110,7 +112,6 @@ impl Guess<'_> {
         // guess A should also give mask C against answer G.
         Correctness::compute(word, &self.word) == self.mask
     }
-    
 }
 
 pub trait Guesser {
@@ -148,7 +149,6 @@ macro_rules! mask {
 
 #[cfg(test)]
 mod tests {
-
     mod guess_matcher {
         use crate::Guess;
         use std::borrow::Cow;
@@ -171,8 +171,9 @@ mod tests {
                 assert_ne!($crate::Correctness::compute($next, $prev), mask![$($mask )+]);
             }
         }
+
         #[test]
-        fn matches() {
+        fn from_jon() {
             check!("abcde" + [C C C C C] allows "abcde");
             check!("abcdf" + [C C C C C] disallows "abcde");
             check!("abcde" + [W W W W W] allows "fghij");
@@ -188,8 +189,10 @@ mod tests {
         }
 
         #[test]
-        fn more_edge_cases() {
+        fn from_chat() {
+            // flocular
             check!("aaabb" + [C M W W W] disallows "accaa");
+            // ritoban
             check!("abcde" + [W W W W W] disallows "bcdea");
         }
     }
@@ -206,60 +209,60 @@ mod tests {
         #[test]
         fn magnificent() {
             let w = Wordle::new();
-            let guesser = guesser!(|history| { 
+            let guesser = guesser!(|history| {
                 if history.len() == 1 {
                     return "right".to_string();
                 }
                 return "wrong".to_string();
-             });
+            });
             assert_eq!(w.play("right", guesser), Some(2));
         }
 
         #[test]
         fn impressive() {
             let w = Wordle::new();
-            let guesser = guesser!(|history| { 
+            let guesser = guesser!(|history| {
                 if history.len() == 2 {
                     return "right".to_string();
                 }
                 return "wrong".to_string();
-             });
+            });
             assert_eq!(w.play("right", guesser), Some(3));
         }
 
         #[test]
         fn splendid() {
             let w = Wordle::new();
-            let guesser = guesser!(|history| { 
+            let guesser = guesser!(|history| {
                 if history.len() == 3 {
                     return "right".to_string();
                 }
                 return "wrong".to_string();
-             });
+            });
             assert_eq!(w.play("right", guesser), Some(4));
         }
 
         #[test]
         fn great() {
             let w = Wordle::new();
-            let guesser = guesser!(|history| { 
+            let guesser = guesser!(|history| {
                 if history.len() == 4 {
                     return "right".to_string();
                 }
                 return "wrong".to_string();
-             });
+            });
             assert_eq!(w.play("right", guesser), Some(5));
         }
 
         #[test]
         fn phew() {
             let w = Wordle::new();
-            let guesser = guesser!(|history| { 
+            let guesser = guesser!(|history| {
                 if history.len() == 5 {
                     return "right".to_string();
                 }
                 return "wrong".to_string();
-             });
+            });
             assert_eq!(w.play("right", guesser), Some(6));
         }
 
@@ -270,6 +273,7 @@ mod tests {
             assert_eq!(w.play("right", guesser), None);
         }
     }
+
     mod compute {
         use crate::Correctness;
 
@@ -279,7 +283,7 @@ mod tests {
         }
 
         #[test]
-        fn all_grey() {
+        fn all_gray() {
             assert_eq!(Correctness::compute("abcde", "fghij"), mask![W W W W W]);
         }
 
@@ -294,7 +298,7 @@ mod tests {
         }
 
         #[test]
-        fn repeat_tellow() {
+        fn repeat_yellow() {
             assert_eq!(Correctness::compute("aabbb", "ccaac"), mask![W W M M W]);
         }
 
@@ -304,17 +308,17 @@ mod tests {
         }
 
         #[test]
-        fn edge_1() {
+        fn dremann_from_chat() {
             assert_eq!(Correctness::compute("azzaz", "aaabb"), mask![C M W W W]);
         }
 
         #[test]
-        fn edge_2() {
+        fn itsapoque_from_chat() {
             assert_eq!(Correctness::compute("baccc", "aaddd"), mask![W C W W W]);
         }
 
         #[test]
-        fn edge_3() {
+        fn ricoello_from_chat() {
             assert_eq!(Correctness::compute("abcde", "aacde"), mask![C W C C C]);
         }
     }
