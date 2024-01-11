@@ -1,5 +1,5 @@
-use crate::{Guess, Guesser, DICTIONARY, Correctness};
-use std::{collections::HashMap, borrow::Cow};
+use crate::{Correctness, Guess, Guesser, DICTIONARY};
+use std::{borrow::Cow, collections::HashMap};
 
 pub struct Allocs {
     remaining: HashMap<&'static str, usize>,
@@ -18,6 +18,7 @@ impl Allocs {
         }
     }
 }
+
 #[derive(Debug, Copy, Clone)]
 struct Candidate {
     word: &'static str,
@@ -39,14 +40,13 @@ impl Guesser for Allocs {
         for (&word, _) in &self.remaining {
             let mut sum = 0.0;
             for pattern in Correctness::patterns() {
-                // considering a word where we _did_ guess `word` and got `pattern` as the 
-                // correctness. Now, compute what _then_ is left
+                // considering a world where we _did_ guess `word` and got `pattern` as the
+                // correctness. now, compute what _then_ is left.
                 let mut in_pattern_total = 0;
                 for (candidate, count) in &self.remaining {
-                
                     let g = Guess {
                         word: Cow::Borrowed(word),
-                        mask:pattern
+                        mask: pattern,
                     };
                     if g.matches(candidate) {
                         in_pattern_total += count;
@@ -58,23 +58,15 @@ impl Guesser for Allocs {
                 // TODO: apply sigmoid
                 let p_of_this_pattern = in_pattern_total as f64 / remaining_count as f64;
                 sum += p_of_this_pattern * p_of_this_pattern.log2();
-            
             }
             let goodness = -sum;
-
             if let Some(c) = best {
-                // is this one better?
+                // Is this one better?
                 if goodness > c.goodness {
-                    best = Some(Candidate {
-                        word,
-                        goodness,
-                    });
+                    best = Some(Candidate { word, goodness });
                 }
             } else {
-                best = Some(Candidate {
-                    word,
-                    goodness,
-                });
+                best = Some(Candidate { word, goodness });
             }
         }
         best.unwrap().word.to_string()
